@@ -1,0 +1,53 @@
+:root {
+  font-size: 12.5px;
+}
+
+// .btn {
+//   @apply rounded px-1
+// }
+
+#canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+@require './prime-hack'
+@require './my-app'
+@require './app-file-view'
+@require './markdown'
+// @require './github-markdown'
+
+.icon-svg {
+  // width: 1.5em;
+  // height: 1.5em;
+  font-size: 1.5em;
+}
+
+.p-accordionpanel:last-child {
+  border-bottom: 0;
+}
+
+.stack-v {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.5rem;
+  align-content: space-around;
+  justify-content: start;
+}
+.stack-h {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-content: space-around;
+  justify-content: start;
+}
+// .text-border-light {
+//   text-shadow: .5px .5px .2px #fff, -.5px -.5px .2px #fff, .5px -.5px .2px #fff, -.5px .5px .2px #fff;
+// }
+// .text-border-dark {
+//   text-shadow: .5px .5px .2px #000, -.5px -.5px .2px #000, .5px -.5px .2px #000, -.5px .5px .2px #000;
+// }

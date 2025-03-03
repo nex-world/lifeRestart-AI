@@ -1,0 +1,106 @@
+{
+  "compilerOptions": {
+
+    "allowJs": true,
+
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+
+    /* Linting */
+    "strict": true,
+    // "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Resolving */
+    "baseUrl": "./",
+    "paths":{
+
+      "@api": ["src/api"],
+      "@api/*": ["src/api/*"],
+
+      "@assets": ["src/assets"],
+      "@assets/*": ["src/assets/*"],
+
+      "@components": ["src/components"],
+      "@components/*": ["src/components/*"],
+
+      "@config": ["src/config"],
+      "@config/*": ["src/config/*"],
+
+      "@directives": ["src/directives"],
+      "@directives/*": ["src/directives/*"],
+
+      "@filters": ["src/filters"],
+      "@filters/*": ["src/filters/*"],
+
+      "@hooks": ["src/hooks"],
+      "@hooks/*": ["src/hooks/*"],
+
+      "@layout": ["src/layout"],
+      "@layout/*": ["src/layout/*"],
+      "@layouts": ["src/layouts"],
+      "@layouts/*": ["src/layouts/*"],
+
+      "@locale": ["src/locale"],
+      "@locale/*": ["src/locale/*"],
+
+      "@mock": ["src/mock"],
+      "@mock/*": ["src/mock/*"],
+
+      "@views": ["src/views"],
+      "@views/*": ["src/views/*"],
+
+      "@router": ["src/router"],
+      "@router/*": ["src/router/*"],
+
+      "@store": ["src/store"],
+      "@store/*": ["src/store/*"],
+      "@stores": ["src/stores"],
+      "@stores/*": ["src/stores/*"],
+
+      "@types": ["src/types"],
+      "@types/*": ["src/types/*"],
+
+      "@utils": ["src/utils"],
+      "@utils/*": ["src/utils/*"],
+
+
+      // "@/*": ["src/*"],
+      "@src": ["src"],
+      "@src/*": ["src/*"],
+      "@lib": ["src/lib"],
+      "@lib/*": ["src/lib/*"],
+
+      "@styles": ["src/styles"],
+      "@styles/*": ["src/styles/*"],
+
+      "@pages": ["src/pages"],
+      "@pages/*": ["src/pages/*"],
+      "@tabs": ["src/tabs"],
+      "@tabs/*": ["src/tabs/*"],
+      "@panels": ["src/panels"],
+      "@panels/*": ["src/panels/*"],
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+    ,
+    "src/**/*.tsx"
+    ,
+    "src/**/*.vue"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

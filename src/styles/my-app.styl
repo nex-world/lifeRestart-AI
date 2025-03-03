@@ -1,0 +1,42 @@
+
+
+#the-only-art-board-wrap {
+  background-color: var(--p-surface-100);
+  canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+
+
+.my-box {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-content: space-around;
+  justify-content: start;
+}
+
+.my-cell-in-box {
+  // min-height: 200px;
+  max-height: 400px;
+  width: 98%;
+  @media (min-width: 640px) {
+    width: 48%;
+  }
+  @media (min-width: 768px) {
+    width: 32%;
+  }
+  @media (min-width: 1024px) {
+    width: 24%;
+  }
+  @media (min-width: 1280px) {
+    width: 20%;
+  }
+  @media (min-width: 1536px) {
+    width: 16%;
+  }
+}
