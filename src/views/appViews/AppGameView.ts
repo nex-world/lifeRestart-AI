@@ -10,6 +10,7 @@ import {
   computed,
   onMounted,
   onUnmounted,
+  watch,
   // nextTick,
 } from 'vue';
 
@@ -20,6 +21,11 @@ import Panel from 'primevue/panel';
 import Message from 'primevue/message';
 import ToolButton from '@components/shared/ToolButton';
 import { useToast } from 'primevue/usetoast';
+
+import {
+  save,
+  load,
+} from '@utils/functions';
 
 import Life from '@lib/life-restart/life';
 import { defaultConfig } from '@lib/life-restart/defaultConfig';
@@ -104,8 +110,12 @@ function makeGradeClasses(grade?: number) {
 }
 
 
-const AppToolView = defineComponent({
-  name: "AppToolView",
+
+
+
+
+const AppGameView = defineComponent({
+  name: "AppGameView",
   setup() {
 
     const toast = useToast();
@@ -121,6 +131,30 @@ const AppToolView = defineComponent({
 
     const lifeWrapper = markRaw({
       lifeObj: null as Life|Any,
+    });
+
+    onMounted(async () => {
+      const lifeObj = new Life();
+      await lifeObj.initial(loadGameJsonFile);
+      lifeObj.config(defaultConfig);
+
+      lifeWrapper.lifeObj = lifeObj;
+      console.log("lifeWrapper.lifeObj\n", lifeWrapper.lifeObj);
+      console.log("lifeWrapper.lifeObj?.lastExtendTalent\n", lifeWrapper.lifeObj?.lastExtendTalent);
+      /** @TODO 检查一下 lastExtendTalent 如果是 undefined 则要修正 */
+    });
+    onUnmounted(async () => {
+      lifeWrapper.lifeObj = null;
+    });
+    watch(()=>demoData.inheritedTalent, async (newVal, _oldVal)=>{
+      save("demoData.inheritedTalent", newVal);
+    });
+    onMounted(async () => {
+      const inheritedTalent = await load("demoData.inheritedTalent");
+      if (inheritedTalent) {
+        console.log("inheritedTalent\n", inheritedTalent);
+        demoData.inheritedTalent = inheritedTalent;
+      }
     });
 
     function computeOKVal (key: MainAllocationKey, val: number) {
@@ -235,18 +269,6 @@ const AppToolView = defineComponent({
       console.log("demoData.summary\n", demoData.summary);
     }
 
-    onMounted(async () => {
-      const lifeObj = new Life();
-      await lifeObj.initial(loadGameJsonFile);
-      lifeObj.config(defaultConfig);
-
-      lifeWrapper.lifeObj = lifeObj;
-      console.log("lifeWrapper.lifeObj\n", lifeWrapper.lifeObj);
-    });
-    onUnmounted(async () => {
-      lifeWrapper.lifeObj = null;
-    });
-
 
 
 
@@ -293,6 +315,10 @@ const AppToolView = defineComponent({
                 vnd(ToolButton, { label: "10连抽!", icon: "pi pi-refresh", class: "",
                   onClick: async () => {
                     demoData.page = "天赋抽卡";
+                    if (demoData.inheritedTalent?.id) {
+                      console.log("demoData.inheritedTalent\n", demoData.inheritedTalent);
+                      lifeWrapper.lifeObj?.talentExtend?.(String(demoData.inheritedTalent?.id));
+                    }
                     demoData.talentChoices = lifeWrapper.lifeObj?.talentRandom?.() ?? [];
                   },
                 }),
@@ -542,4 +568,4 @@ const AppToolView = defineComponent({
   }
 })
 
-export default AppToolView;
+export default AppGameView;

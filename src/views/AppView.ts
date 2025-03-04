@@ -47,6 +47,7 @@ const AppView = defineComponent({
     // const { availableLocales, locale } = storeToRefs(systemSettingsStore);
 
     const items = ref([
+      { label: "配置", name: "app-config", icon: "pi pi-cog" },
       { label: "游戏", name: "app-game", icon: "pi pi-play-circle" },
       { label: "说明", name: "app-about", icon: "pi pi-book" },
       // { label: "笔记", name: "app-notes", icon: "pi pi-clipboard" },

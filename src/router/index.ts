@@ -11,6 +11,7 @@ import AppView from '@views/AppView';
 import AppGameView from '@views/appViews/AppGameView';
 import AppNotesView from '@views/appViews/AppNotesView';
 import AppAboutView from '@views/appViews/AppAboutView';
+import AppConfigView from '@views/appViews/AppConfigView';
 
 // const routes = [
 //   { path: '/:pathMatch(.*)*', name: '404', component: NotFoundView },
@@ -26,6 +27,7 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: '404', component: NotFoundView },
   { path: '/', redirect: '/game' },
   { path: '/', name: 'app-root', component: AppView, children: [
+    { path: 'config', name: 'app-config', component: AppConfigView },
     { path: 'game', name: 'app-game', component: AppGameView },
     { path: 'about', name: 'app-about', component: AppAboutView },
     { path: 'notes', name: 'app-notes', component: AppNotesView },

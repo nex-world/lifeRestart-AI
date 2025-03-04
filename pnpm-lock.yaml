@@ -25,7 +25,7 @@ importers:
         version: 11.3.0(rxjs@7.8.2)(vue@3.5.13(typescript@5.7.3))
       ai-util:
         specifier: ^0.0.7
-        version: 0.0.7(typescript@5.7.3)
+        version: 0.0.7(typescript@5.7.3)(zod@3.24.2)
       axios:
         specifier: ^1.8.1
         version: 1.8.1
@@ -56,6 +56,9 @@ importers:
       json5:
         specifier: ^2.2.3
         version: 2.2.3
+      llm-utils:
+        specifier: ^0.0.4
+        version: 0.0.4(typescript@5.7.3)
       localforage:
         specifier: ^1.10.0
         version: 1.10.0
@@ -70,7 +73,7 @@ importers:
         version: 5.1.2
       openai:
         specifier: ^4.85.4
-        version: 4.85.4
+        version: 4.85.4(zod@3.24.2)
       pako:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2811,6 +2814,9 @@ packages:
   linkify-it@5.0.0:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
 
+  llm-utils@0.0.4:
+    resolution: {integrity: sha512-24FvNbE6j8QmQ1FijIXrhspfs9VZYBdAwUitQj/PWXSCOHIGCWji3u5NdnSker+Dzm1UQVq5fFymOcA01jRHqg==}
+
   load-tsconfig@0.2.5:
     resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -3854,6 +3860,9 @@ packages:
 
   zipson@0.2.12:
     resolution: {integrity: sha512-+u+fyZQXJUJDTf4NGCChW+LoWGqCrhwHAfvtCtcmE0e40KmQt4YSP4l3TOay1WjRNv+VfODgBD/vNwaSSGnDwA==}
+
+  zod@3.24.2:
+    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -5442,12 +5451,12 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai-util@0.0.7(typescript@5.7.3):
+  ai-util@0.0.7(typescript@5.7.3)(zod@3.24.2):
     dependencies:
       axios: 1.8.1
       json5: 2.2.3
       lodash: 4.17.21
-      openai: 4.85.4
+      openai: 4.85.4(zod@3.24.2)
       vue: 3.5.13(typescript@5.7.3)
     transitivePeerDependencies:
       - debug
@@ -6541,6 +6550,20 @@ snapshots:
     dependencies:
       uc.micro: 2.1.0
 
+  llm-utils@0.0.4(typescript@5.7.3):
+    dependencies:
+      axios: 1.8.1
+      json5: 2.2.3
+      lodash: 4.17.21
+      openai: 4.85.4(zod@3.24.2)
+      vue: 3.5.13(typescript@5.7.3)
+      zod: 3.24.2
+    transitivePeerDependencies:
+      - debug
+      - encoding
+      - typescript
+      - ws
+
   load-tsconfig@0.2.5: {}
 
   local-pkg@0.5.1:
@@ -7055,7 +7078,7 @@ snapshots:
       regex: 5.1.1
       regex-recursion: 5.1.1
 
-  openai@4.85.4:
+  openai@4.85.4(zod@3.24.2):
     dependencies:
       '@types/node': 18.19.76
       '@types/node-fetch': 2.6.12
@@ -7064,6 +7087,8 @@ snapshots:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.7.0
+    optionalDependencies:
+      zod: 3.24.2
     transitivePeerDependencies:
       - encoding
 
@@ -7919,5 +7944,7 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zipson@0.2.12: {}
+
+  zod@3.24.2: {}
 
   zwitch@2.0.4: {}

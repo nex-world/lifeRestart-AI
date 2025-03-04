@@ -1,7 +1,7 @@
 {
-  "name": "lifeRestart-AI",
+  "name": "life-restart-ai",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -28,6 +28,7 @@
     "github-markdown-css": "^5.8.1",
     "jschardet": "^3.1.4",
     "json5": "^2.2.3",
+    "llm-utils": "^0.0.4",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",
