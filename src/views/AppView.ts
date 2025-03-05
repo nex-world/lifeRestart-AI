@@ -114,7 +114,7 @@ const AppView = defineComponent({
 
 
             { label: "原作", icon: 'pi pi-globe', url: 'https://liferestart.syaro.io/public/index.html', target: '_blank', },
-            { label: "GitHub", icon: 'pi pi-github', url: 'https://github.com/kitools/deepseek-token-counter', target: '_blank', },
+            { label: "GitHub", icon: 'pi pi-github', url: 'https://github.com/nex-world/lifeRestart-AI', target: '_blank', },
             { label: "theme",
               icon: `pi pi-${isDarkModeOn.value ? "moon" : "sun"}`,
               command: () => { toggleDarkMode(); },
