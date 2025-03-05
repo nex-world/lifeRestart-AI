@@ -19,17 +19,29 @@ import {
 import Tag from 'primevue/tag';
 import Panel from 'primevue/panel';
 import Message from 'primevue/message';
+import ProgressSpinner from 'primevue/progressspinner';
 import ToolButton from '@components/shared/ToolButton';
 import { useToast } from 'primevue/usetoast';
 
 import {
   save,
   load,
+  sleep,
+  生成详细故事,
 } from '@utils/functions';
+
+import { suppliers, SupplierDict } from "llm-utils";
+type ModelDict = {name?: string, label?: string, id?: string|number};
+export const DEFAULT_MODEL = {label:"[[<DEFAULT>]]"};
 
 import Life from '@lib/life-restart/life';
 import { defaultConfig } from '@lib/life-restart/defaultConfig';
 import { i18n } from '@lib/life-restart';
+
+// ========== ========== ========== ========== ========== ========== ========== ========== ========== ========== //
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
 
 const DDDD = true;
 
@@ -52,29 +64,20 @@ function PropSDT(ss: string) {
   return PropSD[ss as keyof (typeof PropSD)] ?? ss;
 }
 
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Any = any;
-
-
-async function loadGameJsonFile(key: string) {
-  const val = (await import(`../../data/${key}.json`)).default;
-  return _.cloneDeep(val);
-}
-
 const pageMap = { "": "立即重开", };
 const pageM = (ss: string) => pageMap?.[ss as keyof (typeof pageMap)] ?? ss;
-
 
 const initialDemoData = {
   processing: false,
   page: "",
-
   autoPlay: false,
-  autoFunctionIdx: null as number|null,
+  // autoFunctionIdx: null as number|null,
+  useAI: false,
+  thinking: "",
+  output: "",
+
 
   talentChoices: [] as Any[],
-
   usedPropertyPoints: 0,
 
   allocation: {
@@ -84,19 +87,13 @@ const initialDemoData = {
     MNY: 0,
 
     TLT: [] as Any[],
-
     EXT: null as number|string|null,
   },
-
-  state: {} as Any,
-
-  summary: [] as Any[],
-
-  lifeStory: [] as Any[],
-
-  lifeEnded: false,
-
   inheritedTalent: null as Any,
+  lifeEnded: false,
+  state: {} as Any,
+  summary: [] as Any[],
+  lifeStory: [] as Any[],
 };
 type MainAllocationKey = "CHR"|"INT"|"STR"|"MNY";
 
@@ -109,10 +106,20 @@ function makeGradeClasses(grade?: number) {
   ];
 }
 
+async function loadGameJsonFile(key: string) {
+  const val = (await import(`../../data/${key}.json`)).default;
+  return _.cloneDeep(val);
+}
+
+// ========== ========== ========== ========== ========== ========== ========== ========== ========== ========== //
 
 
 
 
+
+
+
+// ========== ========== ========== ========== ========== ========== ========== ========== ========== ========== //
 
 const AppGameView = defineComponent({
   name: "AppGameView",
@@ -122,6 +129,18 @@ const AppGameView = defineComponent({
 
     const storyBoxRef = ref<HTMLElement|null>(null);
 
+    // /** data **/ //
+    const supplierForm = reactive({
+      selectedSupplier: suppliers[0] as SupplierDict,
+      apiKeyDict: {} as Record<string, string>,
+      supplierModelsDict: {} as Record<string, ModelDict[]>,
+      selectedModelDict: {} as Record<string, ModelDict>,
+    });
+    onMounted(async ()=>{
+      const supplierForm_ = await load("supplierForm");
+      if (supplierForm_!=null) { Object.assign(supplierForm, supplierForm_); }
+      console.log(supplierForm);
+    });
     // /** data **/ //
     const demoData = reactive(_.cloneDeep(initialDemoData));
     const selectedTalents = computed(() => demoData.talentChoices.filter((talent: Any) => talent.selected));
@@ -201,20 +220,28 @@ const AppGameView = defineComponent({
       demoData.state.TLT = lifeWrapper.lifeObj?._property?.get?.("TLT");
       demoData.state.EVT = lifeWrapper.lifeObj?._property?.get?.("EVT");
 
-      // demoData.lifeStory = demoData.state.EVT.map((it: Any) => {
-      //   return lifeWrapper.lifeObj?._event?.get?.(it as string);
-      // });
-
       console.log("properties\n", properties);
       console.log("demoData.state\n", demoData.state);
-      // console.log("demoData.lifeStory\n", demoData.lifeStory);
     }
     function start() {
       demoData.allocation.TLT = selectedTalents.value.map(it=>it?.id);
       lifeWrapper.lifeObj?.start?.(demoData.allocation);
       updateData();
     }
-    function step() {
+    function scrollToTheBottom() {
+      const storyBox = storyBoxRef.value;
+      if (!storyBox) return;
+      // Check if user is already near the bottom
+      const isNearBottom = storyBox.scrollHeight - storyBox.scrollTop - storyBox.clientHeight < 400;  // px
+      if (isNearBottom) {
+        requestAnimationFrame(() => {
+          storyBox.scrollTo({ top: storyBox.scrollHeight, behavior: "smooth" });
+        });
+      }
+    }
+    async function step() {
+
+      scrollToTheBottom();
 
       if (demoData.lifeEnded) {
         stopAuto();
@@ -226,31 +253,39 @@ const AppGameView = defineComponent({
       console.log({ age, content, isEnd });
 
       demoData.lifeStory.push({ age, content, isEnd });
+      updateData();
 
-      storyBoxRef.value?.scrollTo?.({ top: storyBoxRef?.value?.scrollHeight, behavior: "smooth" });
+      if (demoData.useAI&&demoData.lifeStory?.length>2) {
+        await 生成详细故事(demoData, supplierForm, ()=>{scrollToTheBottom()});
+      }
 
       if (isEnd) {
         demoData.lifeEnded = true;
         makeLifeSummary();
+        stopAuto();
       }
-
-      updateData();
+      await sleep(10);
+      scrollToTheBottom();
     }
-    function startAuto() {
+    async function startAuto() {
       demoData.autoPlay = true;
-      const interval = setInterval(() => {
-        if (demoData.autoPlay) {
-          step();
-        } else {
-          clearInterval(interval);
-        }
-      }, 250);
-      demoData.autoFunctionIdx = interval;
+      while (demoData.autoPlay) {
+        await step();
+        await sleep(700);
+      }
+      // const interval = setInterval(() => {
+      //   if (demoData.autoPlay) {
+      //     step();
+      //   } else {
+      //     clearInterval(interval);
+      //   }
+      // }, 250);
+      // demoData.autoFunctionIdx = interval;
     }
-    function stopAuto() {
+    async function stopAuto() {
       demoData.autoPlay = false;
-      clearInterval(demoData.autoFunctionIdx as number);
-      demoData.autoFunctionIdx = null;
+      // clearInterval(demoData.autoFunctionIdx as number);
+      // demoData.autoFunctionIdx = null;
     }
     function toggleAuto() {
       if (demoData.autoPlay) {
@@ -360,7 +395,7 @@ const AppGameView = defineComponent({
                 label: `${talent?.name}（${talent?.description}）${talent?.selected?"【已选】":""}`,
                 class: [
                   makeGradeClasses(talent?.grade),
-                  talent?.selected?"border-red-500! text-red-100!":"",
+                  talent?.selected?"border-red-500! text-red-300!":"",
                 ],
                 onClick: async () => {
                   if (selectedTalents.value.length >= lifeWrapper.lifeObj?.talentSelectLimit && !talent.selected) {
@@ -452,8 +487,18 @@ const AppGameView = defineComponent({
                 vnd(ToolButton, { label: "人生总结", icon: "pi pi-list-check", class: [!demoData.lifeEnded?"hidden!":null], onClick: async () => {
                   demoData.page = "人生总结";
                 }, }),
-                vnd(ToolButton, { label: demoData.autoPlay?"停止":"自动", icon: "pi pi-arrow-circle-right", class: [demoData.lifeEnded?"hidden!":null], onClick: async () => { toggleAuto(); }, }),
-                vnd(ToolButton, { label: "下一年", icon: "pi pi-arrow-right", class: [demoData.lifeEnded?"hidden!":null], onClick: async () => { step(); }, }),
+                vnd(ToolButton, { label: "下一年", icon: "pi pi-arrow-right", class: [demoData.lifeEnded?"hidden!":null], onClick: async () => { await step(); }, disabled: demoData.processing }),
+                vnd(ToolButton, {
+                  label: demoData.autoPlay?"停止":"自动",
+                  icon: demoData.autoPlay?"pi pi-stop-circle":"pi pi-arrow-circle-right",
+                  class: [demoData.lifeEnded?"hidden!":null],
+                  onClick: async () => { toggleAuto(); },
+                  disabled: demoData.processing&&!demoData.autoPlay,
+                }),
+              ]),
+
+              vnd("div", {class: "stack-h"}, [
+                vnd(ToolButton, { label: `AI讲述：${demoData.useAI?"已开启":"已关闭"}`, icon: "pi pi-sparkles", class: [demoData.lifeEnded?"hidden!":null], onClick: async () => { demoData.useAI=!demoData.useAI; }, }),
               ]),
 
               vnd("div", {class: "stack-h"}, [
@@ -462,6 +507,10 @@ const AppGameView = defineComponent({
                   vnd("div", {}, demoData.state[key]),
                 ])),
               ]),
+
+              // vnd("div", {class: "p-panel p-0.5rem"}, [
+              //   vnd("div", {}, demoData.output),
+              // ]),
 
 
               vnd("div", {
@@ -483,7 +532,16 @@ const AppGameView = defineComponent({
                     it?.type!="EVT"?null:
                     vnd(Message, {severity: "secondary", class: [makeGradeClasses(it?.grade)]}, {default:()=>`${it?.description} ${it?.postEvent??""}`}),
                   ])),
-                ]))
+                  !thing?.output?null:
+                  vnd(Message, {severity: "secondary", class: []}, {default:()=>`${thing?.output}`}),
+                ])),
+
+                !demoData.processing ? null :
+                vnd(ProgressSpinner, {style: {
+                  strokeWidth: "1rem",
+                  width: "2.5rem",
+                  height: "2.5rem",
+                }, class: "my-spinner my-0.5rem!"}),
               ]),
 
             ]:pageV.value=="人生总结"?[
@@ -516,7 +574,7 @@ const AppGameView = defineComponent({
                 label: `${talent?.name}（${talent?.description}）${demoData.inheritedTalent?.name==talent?.name?"【已选】":""}`,
                 class: [
                   makeGradeClasses(talent?.grade),
-                  demoData.inheritedTalent?.name==talent?.name?"border-red-500! text-red-100!":"",
+                  demoData.inheritedTalent?.name==talent?.name?"border-red-500! text-red-300!":"",
                 ],
                 onClick: async () => {
                   if (demoData.inheritedTalent?.name==talent?.name) {
