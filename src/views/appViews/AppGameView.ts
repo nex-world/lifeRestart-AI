@@ -146,7 +146,7 @@ const AppGameView = defineComponent({
     const selectedTalents = computed(() => demoData.talentChoices.filter((talent: Any) => talent.selected));
     const pageV = computed(() => pageM(demoData.page));
     const propertyPoints = computed(() => lifeWrapper.lifeObj?.getPropertyPoints?.() ?? lifeWrapper.lifeObj?._defaultPropertyPoints ?? 0);
-    const restPropertyPoints = computed(() => propertyPoints.value - demoData.usedPropertyPoints);
+    const restPropertyPoints = computed(() => (propertyPoints?.value??0) - (demoData?.usedPropertyPoints??0));
 
     const lifeWrapper = markRaw({
       lifeObj: null as Life|Any,
@@ -444,7 +444,7 @@ const AppGameView = defineComponent({
                 }),
               ]),
 
-              `剩余属性点：${restPropertyPoints.value}`,
+              `剩余属性点：${restPropertyPoints.value??0}`,
               // InputNumber
 
               [["CHR", "颜值"], ["INT", "智力"], ["STR", "体质"], ["MNY", "家境"]].map(([key, label], idx)=>vnd("div", {class: "stack-h justify-center! justify-items-center! items-center!", key: `[${idx}]${key}`}, [
