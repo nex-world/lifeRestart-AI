@@ -10,6 +10,7 @@ import {
   computed,
   onMounted,
   onUnmounted,
+  onUpdated,
   watch,
   // nextTick,
 } from 'vue';
@@ -145,7 +146,11 @@ const AppGameView = defineComponent({
     const demoData = reactive(_.cloneDeep(initialDemoData));
     const selectedTalents = computed(() => demoData.talentChoices.filter((talent: Any) => talent.selected));
     const pageV = computed(() => pageM(demoData.page));
-    const propertyPoints = computed(() => lifeWrapper.lifeObj?.getPropertyPoints?.() ?? lifeWrapper.lifeObj?._defaultPropertyPoints ?? 0);
+    const thatPropertyPoints = ref(0);
+    onUpdated(()=>{
+      thatPropertyPoints.value = lifeWrapper.lifeObj?.getPropertyPoints?.() ?? lifeWrapper.lifeObj?._defaultPropertyPoints ?? 0;
+    });
+    const propertyPoints = computed(() => thatPropertyPoints.value);
     const restPropertyPoints = computed(() => (propertyPoints?.value??0) - (demoData?.usedPropertyPoints??0));
 
     const lifeWrapper = markRaw({
