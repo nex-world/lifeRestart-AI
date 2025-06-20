@@ -2,6 +2,30 @@
 
 type SomeDict = Record<string, any>;
 
+// 天赋数据接口
+export interface TalentData {
+  id: string | number;
+  name: string;
+  description: string;
+  grade: number;
+  condition?: unknown;
+  effect?: unknown;
+  exclusive?: boolean;
+  max_triggers?: number;
+}
+
+// 带选择状态的天赋类型（用于UI）
+export interface TalentWithSelection extends TalentData {
+  selected?: boolean;
+}
+
+// 天赋结果类型
+export interface TalentResult {
+  grade: number;
+  name: string;
+  description: string;
+}
+
 interface RateDict {
   1: number;
   2: number;

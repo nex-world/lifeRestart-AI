@@ -8,13 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppWindow: typeof import('./src/components/AppWindow.vue')['default']
-    // HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
-    Menubar: typeof import('primevue/menubar')['default']
     MenubarWithRouterLink: typeof import('./src/components/MenubarWithRouterLink.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-  }
-  export interface ComponentCustomProperties {
-    Ripple: typeof import('primevue/ripple')['default']
   }
 }

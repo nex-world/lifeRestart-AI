@@ -9,7 +9,8 @@ export { default as Life } from "./life";
 
 export { defaultConfig } from "./defaultConfig";
 
-export { type Any } from "./types";
+export { type Any, type GameState, type PropertyAllocation, type LifeEventContent, type LifeStoryItem, type SummaryItem } from "./types";
+export { type TalentData, type TalentWithSelection, type TalentResult } from "./talent";
 
 import zhCn from "./i18n/zh-cn";
 import enUs from "./i18n/en-us";
