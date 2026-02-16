@@ -49,6 +49,7 @@ const AppView = defineComponent({
     const items = ref([
       { label: "配置", name: "app-config", icon: "pi pi-cog" },
       { label: "游戏", name: "app-game", icon: "pi pi-play-circle" },
+      { label: "更多玩法", name: "app-tavern", icon: "pi pi-star" },
       { label: "说明", name: "app-about", icon: "pi pi-book" },
       // { label: "笔记", name: "app-notes", icon: "pi pi-clipboard" },
     ]);
@@ -114,6 +115,7 @@ const AppView = defineComponent({
 
 
             { label: "原作", icon: 'pi pi-globe', url: 'https://liferestart.syaro.io/public/index.html', target: '_blank', },
+            { label: "更多玩法", icon: 'pi pi-star', url: 'https://nexworld.wiki', target: '_blank', },
             { label: "GitHub", icon: 'pi pi-github', url: 'https://github.com/nex-world/lifeRestart-AI', target: '_blank', },
             { label: "theme",
               icon: `pi pi-${isDarkModeOn.value ? "moon" : "sun"}`,

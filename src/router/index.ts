@@ -11,6 +11,7 @@ import AppView from '@views/AppView';
 import AppGameView from '@views/appViews/AppGameView';
 import AppNotesView from '@views/appViews/AppNotesView';
 import AppAboutView from '@views/appViews/AppAboutView';
+import AppTavernView from '@views/appViews/AppTavernView';
 import AppConfigView from '@views/appViews/AppConfigView';
 
 // const routes = [
@@ -29,6 +30,7 @@ const routes = [
   { path: '/', name: 'app-root', component: AppView, children: [
     { path: 'config', name: 'app-config', component: AppConfigView },
     { path: 'game', name: 'app-game', component: AppGameView },
+    { path: 'tavern', name: 'app-tavern', component: AppTavernView },
     { path: 'about', name: 'app-about', component: AppAboutView },
     { path: 'notes', name: 'app-notes', component: AppNotesView },
   ] },

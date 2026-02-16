@@ -20,6 +20,9 @@ import PropertyAllocationPage from './game/pages/PropertyAllocationPage.vue';
 import LifePage from './game/pages/LifePage.vue';
 import SummaryPage from './game/pages/SummaryPage.vue';
 
+import AppTavernView from './AppTavernView';
+
+
 const AppGameView = defineComponent({
   name: "AppGameView",
   setup() {
@@ -154,6 +157,7 @@ const AppGameView = defineComponent({
             renderPageContent()
           ]),
         }),
+        vnd(AppTavernView),
 
         DDDD ? null :
         vnd(Panel, { header: "其他", toggleable: true, class: "my-1.5rem! col" }, {
