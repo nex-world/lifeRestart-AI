@@ -15,7 +15,15 @@ export function makeGradeClasses(grade?: number): (string | null)[] {
 /**
  * 加载游戏JSON文件
  */
+const gameDataFiles = import.meta.glob('../../../data/*.json');
+
 export async function loadGameJsonFile(key: string): Promise<unknown> {
-  const val = (await import(`../../../data/${key}.json`)).default;
+  const path = `../../../data/${key}.json`;
+  const loader = gameDataFiles[path];
+  if (!loader) {
+    console.error(`Unknown game data file: ${key}`, { path, available: Object.keys(gameDataFiles) });
+    throw new Error(`Unknown game data file: ${key}`);
+  }
+  const val = (await loader() as any).default;
   return _.cloneDeep(val);
 }

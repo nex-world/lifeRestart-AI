@@ -1,10 +1,10 @@
 <template>
-  <div class="stack-v">
-    <div class="stack-h">
+  <div class="stack-v w-full">
+    <div class="stack-h w-full">
       <ToolButton
         label="人生总结"
         icon="pi pi-list-check"
-        :class="[!demoData.lifeEnded ? 'hidden!' : null]"
+        :class="[!demoData.lifeEnded ? 'hidden!' : 'ml-4rem']"
         @click="handleShowSummary"
       />
       <ToolButton
