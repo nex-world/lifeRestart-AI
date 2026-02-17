@@ -152,7 +152,7 @@ const AppGameView = defineComponent({
 
     return () => {
       return vnd("div", {}, [
-        vnd(Panel, { header: pageV() ?? "游戏", class: "my-1.5rem! col" }, {
+        vnd(Panel, { header: pageV() ?? "游戏", class: "my-1.5rem! min-h-60vh! col" }, {
           default: () => vnd("div", { class: "stack-v" }, [
             renderPageContent()
           ]),

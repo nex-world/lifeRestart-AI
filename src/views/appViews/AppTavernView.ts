@@ -25,7 +25,7 @@ const tavernContent = `
 - **隐私至上**：所有数据存储在您的浏览器本地，您的故事仅属于您自己。
 
 <div style="display: flex; justify-content: center; width: 100%; margin: 1.5rem 0;">
-<a href="https://nexworld.wiki/tavern/" style="display: inline-block; margin: 12px auto; padding: 12px 24px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4); transition: transform 0.2s;">立即启动 NexTavern</a>
+<a href="https://nexworld.wiki/tavern/" style="display: inline-block; margin: 12px auto; padding: 10px 24px; background: #6366f1; color: white; border-radius: 6px; text-decoration: none; font-weight: 500; transition: opacity 0.2s;">立即启动 NexTavern</a>
 </div>
 
 ##### 相关链接
@@ -49,7 +49,7 @@ const AppTavernView = defineComponent({
       }, {
         default: () => [
           vnd("div", { class: [ "stack-v" ] }, [
-            vnd("div", { class: "markdown-body",
+            vnd("div", { class: "markdown-body mx-auto",
               innerHTML: md.render(tavernContent.trim()),
             }), 
           ]),
