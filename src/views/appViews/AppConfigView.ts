@@ -100,6 +100,7 @@ export const tableTextarea = (
 
 
 const AppConfigView = defineComponent({
+  name: "AppConfigView",
   setup() {
 
     // /** hooks **/ //

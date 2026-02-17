@@ -100,7 +100,9 @@
 import { ref } from 'vue';
 import Message from 'primevue/message';
 import ProgressSpinner from 'primevue/progressspinner';
+import { useToast } from 'primevue/usetoast';
 import ToolButton from '@components/shared/ToolButton';
+import { load } from '@utils/functions';
 import { makeGradeClasses } from '../utils';
 import { PROPERTY_DISPLAY_KEYS } from '../constants';
 import type { GamePageProps } from '../types';
@@ -109,12 +111,28 @@ interface Props extends Pick<GamePageProps, 'demoData' | 'onPageChange' | 'onSte
 
 const props = defineProps<Props>();
 const storyBoxRef = ref<HTMLElement | null>(null);
+const toast = useToast();
 
 const handleShowSummary = async () => {
   props.onPageChange("人生总结");
 };
 
 const handleToggleAI = async () => {
+  if (!props.demoData.useAI) {
+    const supplierForm = await load("supplierForm");
+    const apiKey = supplierForm?.apiKeyDict?.[supplierForm?.selectedSupplier?.name];
+    const model = supplierForm?.selectedModelDict?.[supplierForm?.selectedSupplier?.name]?.name;
+
+    if (!apiKey || !model || model === '[[<DEFAULT>]]') {
+      toast.add({
+        severity: 'warn',
+        summary: '配置提醒',
+        detail: '需要先配置 LLM 才能开启 AI 讲述，但不开启 AI 讲述也可以进行游戏',
+        life: 5000,
+      });
+      return;
+    }
+  }
   props.demoData.useAI = !props.demoData.useAI;
 };
 

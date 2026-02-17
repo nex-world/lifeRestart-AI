@@ -157,6 +157,26 @@ const AppGameView = defineComponent({
             renderPageContent()
           ]),
         }),
+
+        vnd(Panel, { header: "存档", toggleable: true, class: "my-1.5rem! col" }, {
+          default: () => vnd("div", { class: "stack-v" }, [
+            vnd("div", { class: "stack-h" }, [
+              vnd(ToolButton, {
+                tip: "存档相关操作", label: "存档(测试中)", icon: "pi pi-save", class: "",
+                onClick: async () => {
+                  await gameLogic.saveGame(demoData);
+                },
+              }),
+              vnd(ToolButton, {
+                tip: "读档相关操作", label: "读档(测试中)", icon: "pi pi-undo", class: "",
+                onClick: async () => {
+                  await gameLogic.loadGame(demoData);
+                },
+              }),
+            ]),
+          ]),
+        }),
+
         vnd(AppTavernView),
 
         DDDD ? null :
@@ -173,12 +193,6 @@ const AppGameView = defineComponent({
                 tip: "排行榜相关操作", label: "排行榜", icon: "pi pi-sort-amount-up", class: "",
                 onClick: async () => {
                   toast.add({ severity: "info", summary: "排行榜", detail: "别卷了，没有排行榜", life: 3000 });
-                },
-              }),
-              vnd(ToolButton, {
-                tip: "存档相关操作", label: "存档", icon: "pi pi-save", class: "",
-                onClick: async () => {
-                  toast.add({ severity: "warn", summary: "开发中", detail: "敬请期待", life: 1500 });
                 },
               }),
             ]),

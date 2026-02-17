@@ -230,5 +230,47 @@ export function useGameLogic() {
     toggleAuto,
     makeLifeSummary,
     setupInheritedTalentWatcher,
+    saveGame,
+    loadGame,
   };
+
+  async function saveGame(demoData: GameDemoData) {
+    try {
+      await save("manualSave_demoData", demoData);
+      toast.add({ severity: "success", summary: "存档成功", detail: "游戏进度已保存到本地", life: 1500 });
+    } catch (e) {
+      console.error(e);
+      toast.add({ severity: "error", summary: "存档失败", detail: "保存过程中发生错误", life: 1500 });
+    }
+  }
+
+  async function loadGame(demoData: GameDemoData) {
+    try {
+      const savedData = await load("manualSave_demoData");
+      if (savedData) {
+        Object.assign(demoData, savedData);
+        // 如果游戏正在进行中，尝试恢复 lifeObj 状态（虽然随机性可能导致后续不一致，但至少能维持当前显示）
+        if (demoData.page === "新的人生" && !demoData.lifeEnded) {
+          if (lifeWrapper.lifeObj) {
+            lifeWrapper.lifeObj.start(demoData.allocation);
+            // 快速推进到当前岁数
+            const targetAge = demoData.lifeStory[demoData.lifeStory.length - 1]?.age ?? -1;
+            let currentAge = -1;
+            let safety = 0;
+            while (currentAge < targetAge && safety < 200) {
+              const res = lifeWrapper.lifeObj.next();
+              currentAge = res.age;
+              safety++;
+            }
+          }
+        }
+        toast.add({ severity: "success", summary: "读档成功", detail: "已恢复游戏进度", life: 1500 });
+      } else {
+        toast.add({ severity: "warn", summary: "读档失败", detail: "未找到存档数据", life: 1500 });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.add({ severity: "error", summary: "读档失败", detail: "读取过程中发生错误", life: 1500 });
+    }
+  }
 }

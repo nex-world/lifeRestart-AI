@@ -2,7 +2,7 @@
 
 // import _ from "lodash";
 
-import { h as vnd, defineComponent, ref, watch } from 'vue';
+import { h as vnd, defineComponent, ref, watch, KeepAlive } from 'vue';
 
 // import Panel from 'primevue/panel';
 // import Fieldset from 'primevue/fieldset';
@@ -195,7 +195,11 @@ const AppView = defineComponent({
 
           // vnd("div", {class: ["my-2rem"]}),
 
-          vnd(RouterView),
+          vnd(RouterView, null, {
+            default: ({ Component }: any) => vnd(KeepAlive, null, {
+              default: () => vnd(Component),
+            }),
+          }),
 
           // vnd("div", {class: ["my-2rem"]}),
 
