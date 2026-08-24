@@ -2,6 +2,7 @@
 
 import _ from "lodash";
 import { h as vnd, defineComponent, reactive, ref, onDeactivated } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import Panel from 'primevue/panel';
 import ToolButton from '@components/shared/ToolButton';
 
@@ -9,7 +10,7 @@ import ToolButton from '@components/shared/ToolButton';
 import { useGameLogic } from './game/useGameLogic';
 import { useGameUI } from './game/useGameUI';
 import { initialDemoData, pageM } from './game/constants';
-import type { GameMode } from './game/types';
+import type { GameMode, MainAllocationKey } from './game/types';
 import type { CelebrityCharacter } from '@lib/life-restart/character';
 
 // 导入页面组件
@@ -24,7 +25,11 @@ import CelebritySelectionPage from './game/pages/CelebritySelectionPage.vue';
 import AchievementsDialog from './game/AchievementsDialog.vue';
 
 import AppTavernView from './AppTavernView';
+import { trackAnalyticsEvent } from '@utils/analytics';
 
+type LifePageInstance = ComponentPublicInstance & {
+  storyBoxRef?: HTMLElement | null;
+};
 
 const AppGameView = defineComponent({
   name: "AppGameView",
@@ -53,6 +58,10 @@ const AppGameView = defineComponent({
     };
 
     const handleModeSelect = (mode: GameMode) => {
+      trackAnalyticsEvent({
+        eventType: "game.mode.selected",
+        metadata: { mode },
+      });
       demoData.gameMode = mode;
       if (mode === "classic") {
         handlePageChange("天赋抽卡预备");
@@ -93,7 +102,7 @@ const AppGameView = defineComponent({
     };
 
     // 属性分配计算
-    const handleComputeOKVal = (key: any, val: number) => {
+    const handleComputeOKVal = (key: MainAllocationKey, val: number) => {
       return gameLogic.computeOKVal(
         key,
         val,
@@ -157,9 +166,10 @@ const AppGameView = defineComponent({
             onPageChange: handlePageChange,
             onStep: handleStep,
             onToggleAuto: handleToggleAuto,
-            ref: (el: any) => {
-              if (el?.storyBoxRef) {
-                gameUI.storyBoxRef.value = el.storyBoxRef;
+            ref: (el: Element | ComponentPublicInstance | null) => {
+              if (el && "storyBoxRef" in el) {
+                const storyBoxRef = (el as LifePageInstance).storyBoxRef;
+                if (storyBoxRef) gameUI.storyBoxRef.value = storyBoxRef;
               }
             },
           });

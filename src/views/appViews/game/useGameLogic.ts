@@ -10,9 +10,17 @@ import type { GameDemoData, MainAllocationKey, SupplierForm } from './types';
 import type { TalentWithSelection } from '@lib/life-restart/talent';
 import type { AchievementData } from '@lib/life-restart/achievement';
 import type { CelebrityCharacter } from '@lib/life-restart/character';
+import { useSuppliersStore } from '@stores/suppliersStore';
+import {
+  classifyAiFailure,
+  getAiOperationMetadata,
+  trackAchievementUnlocked,
+  trackAnalyticsEvent,
+} from '@utils/analytics';
 
 export function useGameLogic() {
   const toast = useToast();
+  const suppliersStore = useSuppliersStore();
 
   // 游戏对象包装器
   const lifeWrapper = shallowReactive({
@@ -22,6 +30,7 @@ export function useGameLogic() {
   const achievementRevision = ref(0);
 
   const handleAchievement = (achievement: AchievementData) => {
+    trackAchievementUnlocked(achievement);
     achievementRevision.value += 1;
     toast.add({
       severity: "success",
@@ -180,9 +189,24 @@ export function useGameLogic() {
     updateData(demoData);
 
     if (demoData.useAI && demoData.lifeStory?.length > 2) {
+      const aiMetadata = getAiOperationMetadata(
+        supplierForm,
+        suppliersStore.customSupplierNames,
+      );
       try {
         await 生成详细故事(demoData, supplierForm, () => { scrollToTheBottom(storyBoxRef); });
+        trackAnalyticsEvent({
+          eventType: "ai.operation.succeeded",
+          metadata: aiMetadata,
+        });
       } catch (error) {
+        trackAnalyticsEvent({
+          eventType: "ai.operation.failed",
+          metadata: {
+            ...aiMetadata,
+            failureType: classifyAiFailure(error),
+          },
+        });
         demoData.useAI = false;
         await stopAuto();
         toast.add({
