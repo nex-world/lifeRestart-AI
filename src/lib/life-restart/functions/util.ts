@@ -38,9 +38,9 @@ export function listRandom<T>(list: T[]): T {
   return _.sample(list) as T;
 }
 
-export function getListValuesMap<T, R>(list: T[], fn: (item: T) => R): Record<string, R> {
+export function getListValuesMap<T extends string | number, R>(list: T[], fn: (item: T) => R): Record<string, R> {
   const map: Record<string, R> = {};
-  list.forEach((item, index) => { map[index.toString()] = fn(item); });
+  list.forEach((item) => { map[String(item)] = fn(item); });
   return map;
 }
 

@@ -66,7 +66,7 @@ const handleRandomAllocation = async () => {
   props.demoData.allocation.MNY = 0;
   
   const totalPoints = props.propertyPoints ?? 20;
-  const keys = Object.keys(props.demoData.allocation);
+  const keys = PROPERTY_KEYS.map(([key]) => key);
   
   for (let i = 0; i < totalPoints; i++) {
     const key = _.sample(keys) as string;

@@ -191,7 +191,7 @@ class Life {
   }
 
   getPropertyPoints(): number {
-    return this._defaultPropertyPoints + this._talent.allocationAddition(this._initialData.TLT);
+    return this._defaultPropertyPoints + this._talent.allocationAddition(this._initialData.TLT ?? []);
   }
 
   getTalentCurrentTriggerCount(talentId: string): number {

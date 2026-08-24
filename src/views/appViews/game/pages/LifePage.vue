@@ -121,9 +121,12 @@ const handleToggleAI = async () => {
   if (!props.demoData.useAI) {
     const supplierForm = await load("supplierForm");
     const apiKey = supplierForm?.apiKeyDict?.[supplierForm?.selectedSupplier?.name];
-    const model = supplierForm?.selectedModelDict?.[supplierForm?.selectedSupplier?.name]?.name;
+    const selectedModel = supplierForm?.selectedModelDict?.[supplierForm?.selectedSupplier?.name]?.name;
+    const model = selectedModel && selectedModel !== '[[<DEFAULT>]]'
+      ? selectedModel
+      : supplierForm?.selectedSupplier?.defaultModel;
 
-    if (!apiKey || !model || model === '[[<DEFAULT>]]') {
+    if (!apiKey || !model) {
       toast.add({
         severity: 'warn',
         summary: '配置提醒',

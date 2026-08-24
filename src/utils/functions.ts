@@ -38,47 +38,50 @@ export const sleep = async (ms: number) => {
 };
 
 export const 刷新模型列表 = async (supplier: SupplierDict, form: any) => {
-
   const apiKeyDict = form.apiKeyDict as Record<string, string>;
   const supplierModelsDict = form.supplierModelsDict as Record<string, any>;
+  const fallbackModels = supplier?.models ?? [];
+  const modelsUrl = supplier.modelsUrl;
+  let payload: any = null;
+  let lastError: unknown = null;
 
-  try {
-    const Authorization = `Bearer ${apiKeyDict[supplier.name]}`;
-    console.log({supplier, apiKeyDict, Authorization});
-    let res;
-    try {
-      const response = await fetch(`${supplier.baseUrl}${supplier.modelsUrl}`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      res = { data: await response.json() };
-      console.log(res);
-    } catch (err_1) {
+  if (modelsUrl) {
+    const url = `${supplier.baseUrl.replace(/\/+$/, "")}/${modelsUrl.replace(/^\/+/, "")}`;
+    const apiKey = apiKeyDict[supplier.name]?.trim();
+    const attempts: RequestInit[] = [
+      {},
+      ...(apiKey ? [{ headers: { Authorization: `Bearer ${apiKey}` } }] : []),
+    ];
+
+    for (const options of attempts) {
       try {
-        const response = await fetch(`${supplier.baseUrl}${supplier.modelsUrl}`, {
-          headers: {
-            Authorization: Authorization,
-          },
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        res = { data: await response.json() };
-        console.log(res);
-      } catch (err_2) {
-        console.warn(err_1);
-        console.warn(err_2);
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`模型接口返回 HTTP ${response.status}`);
+        payload = await response.json();
+        break;
+      } catch (error) {
+        lastError = error;
       }
     }
-    let models = res?.data?.data??[];
-    console.log({models});
-    if (!models?.length) {
-      models = supplier?.models??[];
-    }
-    const newSupplierModelsDict = {...supplierModelsDict};
-    newSupplierModelsDict[supplier.name] = models;
-    // Object.assign(form, {supplierModelsDict: newSupplierModelsDict});
-    form.supplierModelsDict = newSupplierModelsDict;
-    save("supplierForm", form);
-  } catch (error) {
-    console.warn(error);
   }
+
+  const remoteModels = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload?.models)
+        ? payload.models
+        : [];
+  const models = remoteModels.length ? remoteModels : fallbackModels;
+
+  if (!models.length && lastError) throw lastError;
+
+  form.supplierModelsDict = {
+    ...supplierModelsDict,
+    [supplier.name]: models,
+  };
+  await save("supplierForm", form);
+  return models;
 };
 
 export const 人生故事讲述者提示词 = `
@@ -129,24 +132,26 @@ export function 制作人生故事输入(demoData:{lifeStory: AgeStory[], state:
 };
 
 export async function 生成详细故事<CR, TT>(demoData: any, supplierForm: any, onAfterUpdate?: any) {
-
   demoData.processing = true;
+  try {
+    demoData.thinking = "";
+    demoData.output = "";
+    const thinkingSpans = [] as string[];
+    const outputSpans = [] as string[];
+    const initialResult = {} as CR;
+    const supplierName = supplierForm?.selectedSupplier?.name;
+    const selectedModel = supplierForm?.selectedModelDict?.[supplierName]?.name;
 
-  demoData.thinking = "";
-  demoData.output = "";
-  const thinkingSpans = [] as string[];
-  const outputSpans = [] as string[];
+    const llmOps = {
+      baseURL: supplierForm?.selectedSupplier?.baseUrl,
+      apiKey: supplierForm?.apiKeyDict?.[supplierName],
+      defaultModel: selectedModel && selectedModel !== '[[<DEFAULT>]]'
+        ? selectedModel
+        : supplierForm?.selectedSupplier?.defaultModel,
+    };
+    const llmClient = new LLMClient(llmOps);
 
-  const initialResult = {} as CR;
-
-  const llmOps = {
-    baseURL: supplierForm?.selectedSupplier?.baseUrl,
-    apiKey: supplierForm?.apiKeyDict[supplierForm?.selectedSupplier?.name],
-    defaultModel: supplierForm?.selectedModelDict?.[supplierForm?.selectedSupplier?.name]?.name,
-  };
-  const llmClient = new LLMClient(llmOps);
-
-  const lifeCycleFns: LifeCycleFns<CR, TT> = {
+    const lifeCycleFns: LifeCycleFns<CR, TT> = {
     chunkProcessor: async (_result, delta) => {
       // console.log("delta", delta);
       if (delta.reasoning_content) {
@@ -173,29 +178,23 @@ export async function 生成详细故事<CR, TT>(demoData: any, supplierForm: an
     onAfterUpdate: async () => {
       await onAfterUpdate?.();
     },
-  };
+    };
 
+    const generator = llmClient.chatWithLifeCycle(
+      人生故事讲述者提示词,
+      [{role: "user" as LLMRole.User, content: 制作人生故事输入(demoData)}],
+      initialResult,
+      {
+        max_tokens: 2000,
+        temperature: 1,
+      },
+      lifeCycleFns,
+    );
 
-  const generator = llmClient.chatWithLifeCycle(
-    人生故事讲述者提示词,
-    [{role: "user" as LLMRole.User, content: 制作人生故事输入(demoData)}],
-
-    initialResult,
-    {
-      max_tokens: 2000,
-      // presence_penalty: 0.06,
-      // temperature: 0.7,
-      temperature: 1,
-    },
-    lifeCycleFns,
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const _chunk of generator) {
-    // console.log("_chunk", _chunk);
-    // do nothing
+    for await (const _chunk of generator) {
+      // 流式结果由 lifeCycleFns 写入当前人生片段。
+    }
+  } finally {
+    demoData.processing = false;
   }
-
-  demoData.processing = false;
 }
-

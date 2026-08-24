@@ -20,6 +20,17 @@ interface CharacterInitialData {
   characters: Record<string, any>;
 }
 
+import { localStoragePrefix } from '@src/--CONFIGS';
+
+export interface CelebrityCharacter {
+  id?: string;
+  name?: string;
+  unique?: boolean;
+  generate?: boolean;
+  property: Record<string, string | number>;
+  talent: any[];
+}
+
 interface UniqueCharacter {
   unique: boolean;
   generate?: boolean;
@@ -44,9 +55,11 @@ class Character {
 
   initial({ characters }: CharacterInitialData): number {
     this.#characters = characters;
-    const uniqueWaTaShi = localStorage.getItem('uniqueWaTaShi');
+    const storageKey = `${localStoragePrefix}uniqueWaTaShi`;
+    const uniqueWaTaShi = localStorage.getItem(storageKey) ?? localStorage.getItem('uniqueWaTaShi');
     if (uniqueWaTaShi != null && uniqueWaTaShi !== 'undefined') {
       this.#uniqueWaTaShi = JSON.parse(uniqueWaTaShi);
+      if (!localStorage.getItem(storageKey)) localStorage.setItem(storageKey, uniqueWaTaShi);
     }
     return this.count;
   }
@@ -85,7 +98,7 @@ class Character {
     this.#uniqueWaTaShi!.unique = true;
     this.#uniqueWaTaShi!.generate = true;
     localStorage.setItem(
-      'uniqueWaTaShi',
+      `${localStoragePrefix}uniqueWaTaShi`,
       JSON.stringify(this.#uniqueWaTaShi)
     );
   }
@@ -114,7 +127,7 @@ class Character {
     return this.#unique;
   }
 
-  random(): { unique: UniqueCharacter | null; normal: any[] } {
+  random(): { unique: UniqueCharacter | null; normal: CelebrityCharacter[] } {
     return {
       unique: this.#unique,
       normal: this.#rateable(),

@@ -20,20 +20,20 @@
 </template>
 
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast';
 import ToolButton from '@components/shared/ToolButton';
-import type { GamePageProps } from '../types';
+import type { GameMode } from '../types';
 
-interface Props extends Pick<GamePageProps, 'onPageChange'> {}
+interface Props {
+  onModeSelect: (mode: GameMode) => void;
+}
 
 const props = defineProps<Props>();
-const toast = useToast();
 
 const handleClassicMode = async () => {
-  props.onPageChange("天赋抽卡预备");
+  props.onModeSelect("classic");
 };
 
 const handleCelebrityMode = async () => {
-  toast.add({ severity: "warn", summary: "开发中", detail: "敬请期待", life: 1500 });
+  props.onModeSelect("celebrity");
 };
 </script>

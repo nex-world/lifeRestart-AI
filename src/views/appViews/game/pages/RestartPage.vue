@@ -15,8 +15,9 @@
       <div class="absolute -bottom-4 -right-4 w-4 h-4 border-b-1 border-r-1 border-slate-300 dark:border-slate-600 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"></div>
 
       <ToolButton
-        label="重 开 新 人 生"
+        :label="lifeWrapper.ready ? '重 开 新 人 生' : '正 在 加 载'"
         icon="pi pi-power-off"
+        :disabled="!lifeWrapper.ready"
         class="restart-btn-fixed !relative !rounded-none !bg-white/50 dark:!bg-white/5 !backdrop-blur-sm !border-1 !border-slate-200 dark:!border-white/10 !text-slate-600 dark:!text-slate-400 !text-sm !font-300 !tracking-0.5em !transition-all !duration-500 hover:!border-slate-900 dark:hover:!border-white/40 hover:!text-slate-900 dark:hover:!text-white hover:!bg-white/90 dark:hover:!bg-white/10 active:!scale-98"
         @click="handleRestart"
       />

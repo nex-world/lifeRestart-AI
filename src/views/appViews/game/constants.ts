@@ -2,9 +2,6 @@ import { i18n } from '@lib/life-restart';
 import type { GameDemoData, MainAllocationKey } from './types';
 import type { PropertyAllocation } from '@lib/life-restart/types';
 
-// 配置常量
-export const DDDD = true;
-
 // 本地化相关
 const SD = i18n["zh-cn"];
 export function SDT(ss: string) {
@@ -52,6 +49,11 @@ export const initialDemoData: GameDemoData = {
   state: {},
   summary: [],
   lifeStory: [],
+  gameMode: null,
+  selectedCharacter: null,
+  characterChoices: [],
+  runCounted: false,
+  latestAchievement: null,
 };
 
 // 属性配置

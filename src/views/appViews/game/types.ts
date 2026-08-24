@@ -2,10 +2,13 @@ import type { JudgeResult } from '@lib/life-restart/property';
 import type { TalentWithSelection } from '@lib/life-restart/talent';
 import type { GameState, PropertyAllocation, LifeStoryItem } from '@lib/life-restart/types';
 import type { SupplierDict } from "llm-utils";
+import type { AchievementData } from '@lib/life-restart/achievement';
+import type { CelebrityCharacter } from '@lib/life-restart/character';
 
 // 基础类型定义
 export type ModelDict = {name?: string, label?: string, id?: string|number};
 export type MainAllocationKey = "CHR"|"INT"|"STR"|"MNY";
+export type GameMode = "classic" | "celebrity";
 
 export const DEFAULT_MODEL = {label:"[[<DEFAULT>]]"};
 
@@ -25,6 +28,11 @@ export interface GameDemoData {
   state: GameState;
   summary: JudgeResult[];
   lifeStory: LifeStoryItem[];
+  gameMode: GameMode | null;
+  selectedCharacter: CelebrityCharacter | null;
+  characterChoices: CelebrityCharacter[];
+  runCounted: boolean;
+  latestAchievement: AchievementData | null;
 }
 
 // 供应商表单类型
@@ -38,7 +46,7 @@ export interface SupplierForm {
 // 页面Props类型
 export interface GamePageProps {
   demoData: GameDemoData;
-  lifeWrapper: { lifeObj: any };
+  lifeWrapper: { lifeObj: any; ready: boolean };
   selectedTalents: TalentWithSelection[];
   propertyPoints: number;
   restPropertyPoints: number;

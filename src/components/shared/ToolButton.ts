@@ -11,12 +11,13 @@ import Button from 'primevue/button';
 
 const ToolButton = defineComponent({
   name: "ToolButton",
+  emits: ["click"],
   props: [
     "label", "tip", "command", "class", "tooltipProps", "direction", "focus",
   ],
   setup(
     props,
-    // {slots}
+    { emit },
   ) {
     // /** directives **/ //
     const tooltip = resolveDirective("tooltip");
@@ -33,16 +34,20 @@ const ToolButton = defineComponent({
         focus: _focus,
         ...otherProps
       } = props;
+      const handleClick = (event: MouseEvent) => {
+        _command?.(event);
+        emit("click", event);
+      };
       if (!_tip?.length) {
         return vnd(Button, {
           label: _label,
-          severity: 'secondary', onClick: _command, outlined: true, ...otherProps,
+          severity: 'secondary', outlined: true, ...otherProps, onClick: handleClick,
           class: ["p-var-p-button-padding-y!", _class],
         });
       }
       return withDirectives(vnd(Button, {
         label: _label,
-        severity: 'secondary', onClick: _command, outlined: true, ...otherProps,
+        severity: 'secondary', outlined: true, ...otherProps, onClick: handleClick,
         class: ["p-var-p-button-padding-y!", _class],
       }),[
         [tooltip, {

@@ -8,6 +8,7 @@ import {
   h as vnd, defineComponent,
 } from 'vue';
 import Panel from 'primevue/panel';
+import { appVersion } from '@src/--CONFIGS';
 // import { useToast } from 'primevue/usetoast';
 
 const md = markdownit({
@@ -26,16 +27,17 @@ const readMeText = `
 
 - **🤖 AI 驱动的沉浸式叙事**：不再只是冷冰冰的数字和预设文本。AI 会根据你的属性、天赋和随机事件，实时生成属于你自己的详尽人生回顾和生涯故事。
 - **🎮 经典机制的全新进化**：完美继承原版的天赋抽卡、属性分配等核心玩法，并针对 AI 续写进行了深度优化。
-- **🛡️ 隐私与数据掌控**：所有游戏存档及对话记录均存储在本地浏览器中（IndexedDB）。我们尊重并保护您的创作隐私，您的故事仅属于您自己。
-- **🌐 灵活的模型支持**：支持 DeepSeek、OpenAI 等多种主流 AI 供应商，可自由切换最适合您的模型。
+- **🛡️ 隐私与数据掌控**：游戏进度、成就与模型配置均保存在本地浏览器中。我们尊重并保护您的创作隐私，您的故事仅属于您自己。
+- **🌐 灵活的模型支持**：支持 DeepSeek、OpenAI 等多种主流 AI 供应商，也可添加兼容接口的自定义供应商。
 - **🎨 现代化的技术栈**：基于 Vue 3、PrimeVue 4 和 UnoCSS 构建，提供流畅、美观且响应式的交互体验。
 
 #### 🚀 开发计划 (Roadmap)
 
 - [x] 基于 AI 的生涯故事生成
 - [x] 多供应商 API 接入与模型自由切换
-- [x] 本地存档系统 (IndexedDB)
-- [ ] 角色成就系统与图鉴收藏
+- [x] 本地存档系统
+- [x] 角色成就系统与图鉴收藏
+- [x] 名人模式
 
 #### 🔗 相关链接
 
@@ -62,6 +64,7 @@ const AppAboutView = defineComponent({
         default: () => [
           vnd("div", { class: [ "stack-v" ] }, [
 
+            vnd("div", { class: "text-sm opacity-60 mb-3" }, `当前版本：v${appVersion}`),
             vnd("div", { class: "markdown-body",
               innerHTML: md.render(readMeText.trim()),
             }), 

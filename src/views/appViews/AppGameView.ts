@@ -1,15 +1,16 @@
 // @unocss-include
 
 import _ from "lodash";
-import { h as vnd, defineComponent, reactive } from 'vue';
+import { h as vnd, defineComponent, reactive, ref, onDeactivated } from 'vue';
 import Panel from 'primevue/panel';
 import ToolButton from '@components/shared/ToolButton';
-import { useToast } from 'primevue/usetoast';
 
 // 导入拆分后的模块
 import { useGameLogic } from './game/useGameLogic';
 import { useGameUI } from './game/useGameUI';
-import { initialDemoData, pageM, DDDD } from './game/constants';
+import { initialDemoData, pageM } from './game/constants';
+import type { GameMode } from './game/types';
+import type { CelebrityCharacter } from '@lib/life-restart/character';
 
 // 导入页面组件
 import RestartPage from './game/pages/RestartPage.vue';
@@ -19,6 +20,8 @@ import TalentSelectionPage from './game/pages/TalentSelectionPage.vue';
 import PropertyAllocationPage from './game/pages/PropertyAllocationPage.vue';
 import LifePage from './game/pages/LifePage.vue';
 import SummaryPage from './game/pages/SummaryPage.vue';
+import CelebritySelectionPage from './game/pages/CelebritySelectionPage.vue';
+import AchievementsDialog from './game/AchievementsDialog.vue';
 
 import AppTavernView from './AppTavernView';
 
@@ -26,10 +29,10 @@ import AppTavernView from './AppTavernView';
 const AppGameView = defineComponent({
   name: "AppGameView",
   setup() {
-    const toast = useToast();
-
     // 游戏数据
     const demoData = reactive(_.cloneDeep(initialDemoData));
+    const achievementsVisible = ref(false);
+    onDeactivated(() => { achievementsVisible.value = false; });
 
     // 初始化游戏逻辑钩子
     const gameLogic = useGameLogic();
@@ -40,10 +43,28 @@ const AppGameView = defineComponent({
 
     // 页面切换处理
     const handlePageChange = (page: string) => {
+      if (page === "调整初始属性") {
+        gameLogic.prepareClassic(demoData, gameUI.selectedTalents.value);
+      }
       demoData.page = page;
       if (page === "新的人生") {
         gameLogic.start(demoData, gameUI.selectedTalents.value);
       }
+    };
+
+    const handleModeSelect = (mode: GameMode) => {
+      demoData.gameMode = mode;
+      if (mode === "classic") {
+        handlePageChange("天赋抽卡预备");
+        return;
+      }
+      gameLogic.drawCelebrityChoices(demoData);
+      handlePageChange("选择名人");
+    };
+
+    const handleCharacterSelect = (character: CelebrityCharacter) => {
+      gameLogic.prepareCelebrity(demoData, character);
+      handlePageChange("新的人生");
     };
 
     // 游戏步骤处理
@@ -77,7 +98,6 @@ const AppGameView = defineComponent({
         key,
         val,
         demoData,
-        gameUI.propertyPoints.value,
         gameUI.restPropertyPoints.value
       );
     };
@@ -108,7 +128,13 @@ const AppGameView = defineComponent({
           });
         case "选择模式":
           return vnd(ModePage, {
-            onPageChange: handlePageChange,
+            onModeSelect: handleModeSelect,
+          });
+        case "选择名人":
+          return vnd(CelebritySelectionPage, {
+            characters: demoData.characterChoices,
+            onRefresh: () => gameLogic.drawCelebrityChoices(demoData),
+            onSelect: handleCharacterSelect,
           });
         case "天赋抽卡预备":
           return vnd(TalentPreparePage, {
@@ -144,6 +170,7 @@ const AppGameView = defineComponent({
             selectedTalents: gameUI.selectedTalents.value,
             onPageChange: handlePageChange,
             onClearData: handleClearData,
+            onCompleteRun: () => gameLogic.completeRun(demoData),
           });
         default:
           return vnd("div", { class: "stack-h" }, []);
@@ -162,14 +189,14 @@ const AppGameView = defineComponent({
           default: () => vnd("div", { class: "stack-v" }, [
             vnd("div", { class: "stack-h" }, [
               vnd(ToolButton, {
-                tip: "存档相关操作", label: "存档(测试中)", icon: "pi pi-save", class: "",
-                onClick: async () => {
+                label: "存档(测试中)", icon: "pi pi-save", class: "",
+                command: async () => {
                   await gameLogic.saveGame(demoData);
                 },
               }),
               vnd(ToolButton, {
-                tip: "读档相关操作", label: "读档(测试中)", icon: "pi pi-undo", class: "",
-                onClick: async () => {
+                label: "读档(测试中)", icon: "pi pi-undo", class: "",
+                command: async () => {
                   await gameLogic.loadGame(demoData);
                 },
               }),
@@ -179,24 +206,22 @@ const AppGameView = defineComponent({
 
         vnd(AppTavernView),
 
-        DDDD ? null :
         vnd(Panel, { header: "其他", toggleable: true, class: "my-1.5rem! col" }, {
           default: () => vnd("div", { class: "stack-v" }, [
             vnd("div", { class: "stack-h" }, [
               vnd(ToolButton, {
-                tip: "成就相关操作", label: "成就", icon: "pi pi-trophy", class: "",
-                onClick: async () => {
-                  toast.add({ severity: "warn", summary: "开发中", detail: "敬请期待", life: 1500 });
-                },
-              }),
-              vnd(ToolButton, {
-                tip: "排行榜相关操作", label: "排行榜", icon: "pi pi-sort-amount-up", class: "",
-                onClick: async () => {
-                  toast.add({ severity: "info", summary: "排行榜", detail: "别卷了，没有排行榜", life: 3000 });
-                },
+                label: "成就", icon: "pi pi-trophy", class: "",
+                command: () => { achievementsVisible.value = true; },
               }),
             ]),
           ]),
+        }),
+
+        vnd(AchievementsDialog, {
+          visible: achievementsVisible.value,
+          lifeObj: gameLogic.lifeWrapper.lifeObj,
+          revision: gameLogic.achievementRevision.value,
+          "onUpdate:visible": (value: boolean) => { achievementsVisible.value = value; },
         }),
       ]);
     };

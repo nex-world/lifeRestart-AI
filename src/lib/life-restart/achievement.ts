@@ -10,7 +10,7 @@ interface System {
   $$event: (event: string, data: any) => any;
 }
 
-interface AchievementData {
+export interface AchievementData {
   id: string;
   name: string;
   opportunity: string;

@@ -3,6 +3,7 @@
 import { cloneDeep, min as _min, max as _max, sum as _sum } from 'lodash';
 
 import type { EventEffect } from './event';
+import { localStoragePrefix } from '@src/--CONFIGS';
 
 export type ProcessedEvents = [(string|number), number][];
 export type NonProcessedEvents = (string|number)[] | string;
@@ -491,14 +492,21 @@ export class Property {
   }
 
   lsGet(key: string): any {
-    const data = localStorage.getItem(key);
+    const namespacedKey = `${localStoragePrefix}${key}`;
+    let data = localStorage.getItem(namespacedKey);
+    if (data === null) {
+      data = localStorage.getItem(key);
+      if (data !== null && data !== 'undefined') {
+        localStorage.setItem(namespacedKey, data);
+      }
+    }
     if (data === null || data === 'undefined') return undefined;
     return JSON.parse(data);
   }
 
   lsSet(key: string, value: any): void {
     localStorage.setItem(
-      key,
+      `${localStoragePrefix}${key}`,
       JSON.stringify(value)
     );
   }

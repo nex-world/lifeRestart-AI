@@ -26,10 +26,9 @@ import { storeToRefs } from 'pinia';
 import { RouterView } from 'vue-router';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { appName, appVersion, nexWorldUrl, repositoryUrl } from '@src/--CONFIGS';
 
 
-
-const APP_NAME = "人生重开模拟器AI版";
 
 const AppView = defineComponent({
   name: "AppView",
@@ -115,8 +114,8 @@ const AppView = defineComponent({
 
 
             { label: "原作", icon: 'pi pi-globe', url: 'https://liferestart.syaro.io/public/index.html', target: '_blank', },
-            { label: "更多玩法", icon: 'pi pi-star', url: 'https://nexworld.wiki', target: '_blank', },
-            { label: "GitHub", icon: 'pi pi-github', url: 'https://github.com/nex-world/lifeRestart-AI', target: '_blank', },
+            { label: "更多玩法", icon: 'pi pi-star', url: nexWorldUrl, target: '_blank', },
+            { label: "GitHub", icon: 'pi pi-github', url: repositoryUrl, target: '_blank', },
             { label: "theme",
               icon: `pi pi-${isDarkModeOn.value ? "moon" : "sun"}`,
               command: () => { toggleDarkMode(); },
@@ -140,7 +139,10 @@ const AppView = defineComponent({
             },
           },
         }, {
-          start: ()=>vnd("span", { class: "font-bold mx-0.5rem" }, APP_NAME),
+          start: ()=>vnd("span", { class: "font-bold mx-0.5rem" }, [
+            appName,
+            vnd("small", { class: "ml-2 opacity-45 font-normal" }, `v${appVersion}`),
+          ]),
         }),
 
         vnd("div", { class: [

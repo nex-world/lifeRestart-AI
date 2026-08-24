@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { markRaw, onMounted, onUnmounted, watch } from 'vue';
+import { shallowReactive, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import Life from '@lib/life-restart/life';
 import { defaultConfig } from '@lib/life-restart/defaultConfig';
@@ -8,28 +8,44 @@ import { loadGameJsonFile } from './utils';
 import { initialDemoData } from './constants';
 import type { GameDemoData, MainAllocationKey, SupplierForm } from './types';
 import type { TalentWithSelection } from '@lib/life-restart/talent';
+import type { AchievementData } from '@lib/life-restart/achievement';
+import type { CelebrityCharacter } from '@lib/life-restart/character';
 
 export function useGameLogic() {
   const toast = useToast();
 
   // 游戏对象包装器
-  const lifeWrapper = markRaw({
+  const lifeWrapper = shallowReactive({
     lifeObj: null as Life | null,
+    ready: false,
   });
+  const achievementRevision = ref(0);
+
+  const handleAchievement = (achievement: AchievementData) => {
+    achievementRevision.value += 1;
+    toast.add({
+      severity: "success",
+      summary: `解锁成就：${achievement.name}`,
+      detail: achievement.description,
+      life: 5000,
+    });
+  };
 
   // 初始化游戏对象
   onMounted(async () => {
     const lifeObj = new Life();
     await lifeObj.initial(loadGameJsonFile);
     lifeObj.config(defaultConfig);
+    lifeObj.$$on("achievement", handleAchievement);
     lifeWrapper.lifeObj = lifeObj;
-    console.log("lifeWrapper.lifeObj\n", lifeWrapper.lifeObj);
-    console.log("lifeWrapper.lifeObj?.lastExtendTalent\n", lifeWrapper.lifeObj?.lastExtendTalent);
+    lifeWrapper.ready = true;
   });
 
   // 清理游戏对象
   onUnmounted(async () => {
+    lifeWrapper.lifeObj?.$$off("achievement", handleAchievement);
     lifeWrapper.lifeObj = null;
+    lifeWrapper.ready = false;
   });
 
   /**
@@ -39,7 +55,6 @@ export function useGameLogic() {
     key: MainAllocationKey,
     val: number,
     demoData: GameDemoData,
-    propertyPoints: number,
     restPropertyPoints: number
   ): {val: number, delta: number} {
     const oldVal = demoData.allocation[key];
@@ -49,19 +64,6 @@ export function useGameLogic() {
     const effectiveBigNewVal = Math.min(newVal, lifeWrapper.lifeObj?.propertyAllocateLimit?.[1] ?? 10);
     const effectiveNewVal = Math.max(effectiveBigNewVal, lifeWrapper.lifeObj?.propertyAllocateLimit?.[0] ?? 0);
     const finalDelta = effectiveNewVal - oldVal;
-
-    console.log({
-      min: lifeWrapper.lifeObj?.propertyAllocateLimit?.[0]??0,
-      max: lifeWrapper.lifeObj?.propertyAllocateLimit?.[1]??propertyPoints??20,
-      val,
-      oldVal,
-      delta,
-      effectiveDelta,
-      newVal,
-      effectiveBigNewVal,
-      effectiveNewVal,
-      finalDelta,
-    });
 
     return {val: effectiveNewVal, delta: finalDelta};
   }
@@ -73,6 +75,36 @@ export function useGameLogic() {
     const inheritedTalent = demoData.inheritedTalent;
     Object.assign(demoData, _.cloneDeep(initialDemoData));
     demoData.inheritedTalent = inheritedTalent;
+  }
+
+  function prepareClassic(demoData: GameDemoData, selectedTalents: TalentWithSelection[]): void {
+    const talentIds = selectedTalents.map((talent) => String(talent.id));
+    demoData.gameMode = "classic";
+    demoData.selectedCharacter = null;
+    demoData.allocation.TLT = talentIds;
+    lifeWrapper.lifeObj?.remake(talentIds);
+  }
+
+  function drawCelebrityChoices(demoData: GameDemoData): void {
+    demoData.gameMode = "celebrity";
+    demoData.selectedCharacter = null;
+    demoData.characterChoices = lifeWrapper.lifeObj?.characterRandom?.().normal ?? [];
+  }
+
+  function prepareCelebrity(demoData: GameDemoData, character: CelebrityCharacter): void {
+    const talents = character.talent.map((talent) => ({ ...talent, selected: true }));
+    const talentIds = talents.map((talent) => String(talent.id));
+    demoData.gameMode = "celebrity";
+    demoData.selectedCharacter = character;
+    demoData.talentChoices = talents;
+    demoData.usedPropertyPoints = 0;
+    demoData.allocation.CHR = Number(character.property.CHR ?? 0);
+    demoData.allocation.INT = Number(character.property.INT ?? 0);
+    demoData.allocation.STR = Number(character.property.STR ?? 0);
+    demoData.allocation.MNY = Number(character.property.MNY ?? 0);
+    demoData.allocation.TLT = talentIds;
+    demoData.allocation.EXT = null;
+    lifeWrapper.lifeObj?.remake(talentIds);
   }
 
   /**
@@ -87,17 +119,28 @@ export function useGameLogic() {
     demoData.state.TLT = lifeWrapper.lifeObj?._property?.get?.("TLT");
     demoData.state.EVT = lifeWrapper.lifeObj?._property?.get?.("EVT");
 
-    console.log("properties\n", properties);
-    console.log("demoData.state\n", demoData.state);
   }
 
   /**
    * 开始游戏
    */
   function start(demoData: GameDemoData, selectedTalents: TalentWithSelection[]): void {
-    demoData.allocation.TLT = selectedTalents.map((it: TalentWithSelection) => it?.id);
-    lifeWrapper.lifeObj?.start?.(demoData.allocation);
+    if (demoData.gameMode === "classic") prepareClassic(demoData, selectedTalents);
+    const allocation = {
+      CHR: demoData.allocation.CHR,
+      INT: demoData.allocation.INT,
+      STR: demoData.allocation.STR,
+      MNY: demoData.allocation.MNY,
+    };
+    lifeWrapper.lifeObj?.start?.(allocation);
     updateData(demoData);
+  }
+
+  function completeRun(demoData: GameDemoData): void {
+    if (demoData.runCounted || !lifeWrapper.lifeObj) return;
+    lifeWrapper.lifeObj.times += 1;
+    demoData.runCounted = true;
+    achievementRevision.value += 1;
   }
 
   /**
@@ -133,13 +176,22 @@ export function useGameLogic() {
     }
 
     const { age, content, isEnd } = lifeWrapper.lifeObj?.next?.()??{};
-    console.log({ age, content, isEnd });
-
     demoData.lifeStory.push({ age: age ?? 0, content: content ?? [], isEnd });
     updateData(demoData);
 
     if (demoData.useAI && demoData.lifeStory?.length > 2) {
-      await 生成详细故事(demoData, supplierForm, () => { scrollToTheBottom(storyBoxRef); });
+      try {
+        await 生成详细故事(demoData, supplierForm, () => { scrollToTheBottom(storyBoxRef); });
+      } catch (error) {
+        demoData.useAI = false;
+        await stopAuto();
+        toast.add({
+          severity: "error",
+          summary: "AI 讲述失败，已自动关闭",
+          detail: error instanceof Error ? error.message : "你仍可继续进行原版人生模拟",
+          life: 5000,
+        });
+      }
     }
 
     if (isEnd) {
@@ -191,13 +243,14 @@ export function useGameLogic() {
    * 生成人生总结
    */
   function makeLifeSummary(demoData: GameDemoData): void {
-    const summary = lifeWrapper.lifeObj?.summary;
-    console.log("summary\n", summary);
-    demoData.summary = [];
-    for (let ii = 0; ii < 7; ii++) {
-      demoData.summary.push(summary?.[ii]);
-    }
-    console.log("demoData.summary\n", demoData.summary);
+    const life = lifeWrapper.lifeObj;
+    if (!life) return;
+    const summary = life.summary;
+    const pt = life.PropertyTypes;
+    demoData.summary = [pt.SUM, pt.HAGE, pt.HCHR, pt.HINT, pt.HSTR, pt.HMNY, pt.HSPR]
+      .map((type) => summary[type])
+      .filter(Boolean);
+    achievementRevision.value += 1;
   }
 
   /**
@@ -211,7 +264,6 @@ export function useGameLogic() {
     onMounted(async () => {
       const inheritedTalent = await load("demoData.inheritedTalent");
       if (inheritedTalent) {
-        console.log("inheritedTalent\n", inheritedTalent);
         demoData.inheritedTalent = inheritedTalent;
       }
     });
@@ -219,6 +271,7 @@ export function useGameLogic() {
 
   return {
     lifeWrapper,
+    achievementRevision,
     computeOKVal,
     clearData,
     updateData,
@@ -230,6 +283,10 @@ export function useGameLogic() {
     toggleAuto,
     makeLifeSummary,
     setupInheritedTalentWatcher,
+    prepareClassic,
+    drawCelebrityChoices,
+    prepareCelebrity,
+    completeRun,
     saveGame,
     loadGame,
   };
