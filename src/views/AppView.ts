@@ -113,7 +113,7 @@ const AppView = defineComponent({
             ]},
 
 
-            { label: "原作", icon: 'pi pi-globe', url: 'https://liferestart.syaro.io/public/index.html', target: '_blank', },
+            { label: "原作", icon: 'pi pi-globe', url: 'https://liferestart.syaro.io/', target: '_blank', },
             { label: "更多玩法", icon: 'pi pi-star', url: nexWorldUrl, target: '_blank', },
             { label: "GitHub", icon: 'pi pi-github', url: repositoryUrl, target: '_blank', },
             { label: "theme",
