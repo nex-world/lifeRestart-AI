@@ -6,7 +6,7 @@ export const appBasePath = "/lifeRestart-AI/";
 export const appUrl = "https://nexworld.wiki/lifeRestart-AI/";
 export const nexWorldUrl = "https://nexworld.wiki/";
 export const repositoryUrl = "https://github.com/nex-world/lifeRestart-AI";
-export const analyticsApiUrl = "https://nex-auth.pureknow.app";
+export const analyticsApiUrl = "https://nex-auth.nexworld.org";
 
 /** 避免同一域名下的其他 NexWorld 产品与本应用的 localStorage 键冲突。 */
 export const localStoragePrefix = "lifeRestartAI:";
